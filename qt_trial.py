@@ -100,6 +100,7 @@ class MainWindow(QMainWindow):
         print("Start Calibration")
         self.close()
         self.calibration = CalibrationPrompt()
+        print("here")
         self.calibration.show()
 
 
@@ -115,14 +116,19 @@ class CalibrationPrompt(QMainWindow):
         self.close()
         
         ## INITIALIZE MAIN PROGRAM CODE
-        segmentation.__init__(self)
+        segment = segmentation()
+        segment.init_drum_sounds()
+        segment.marker_calibration()
+        segment.init_bounding_boxes_coord()
+        segment.main_detection()
+        """segmentation.__init__(self)
         segmentation.init_drum_sounds(self)
         
         ## INSTEAD OF segmentation.init_calibration(self)
         segmentation.marker_calibration(self)
         segmentation.init_bounding_boxes_coord(self)
 
-        segmentation.main_detection(self)
+        segmentation.main_detection(self) """
 
 
 # --- randomize gong sound function ---
@@ -132,7 +138,7 @@ def randomize(gong_number):
         print(filename)   # for checking purposes only
         return filename
 
-class segmentation(object):
+class segmentation(CalibrationPrompt):
     def __init__(self):
         self.frame_width = 854
         self.frame_height = 480
@@ -264,9 +270,9 @@ class segmentation(object):
         self.hmatrix_g = (self.hmatrix_g / np.amax(self.hmatrix_g))*100
         _, self.hmatrix_g = cv2.threshold(self.hmatrix_g, self.THRESH, 255, cv2.THRESH_BINARY)
 
-        plt.imsave('histogram.png',self.hmatrix)
-        plt.imsave('green.png',self.hmatrix_g)
-        plt.imsave('red.png',self.hmatrix_r)
+        #plt.imsave('histogram.png',self.hmatrix)
+        #plt.imsave('green.png',self.hmatrix_g)
+        #plt.imsave('red.png',self.hmatrix_r)
         #self.hmatrix1d = self.hmatrix.flatten()
         self.hmatrix_g1d = self.hmatrix_g.flatten()
         self.hmatrix_r1d = self.hmatrix_r.flatten()
