@@ -17,6 +17,7 @@ from ui_Main_page import Ui_MainPage
 from ui_calib_prompt import Ui_MainWindow
 from ui_About_page import Ui_about_page
 from ui_Tutorial_page import Ui_tutorial_page
+from matplotlib import pyplot as plt
 
 # GLOBAL DECLARATION
 counter = 0
@@ -325,10 +326,10 @@ class segmentation(CalibrationPrompt):
             self.patch[marker] = np.array(cropped)
             self.min_rgb[marker] = np.amin(cropped, axis=(0,1))
             self.max_rgb[marker] = np.amax(cropped, axis=(0,1))
-            if marker == 0:
-                cv2.imwrite('red_patch.jpg', cropped)
-            else:
-                cv2.imwrite('green_patch.jpg', cropped)
+            #if marker == 0:
+            #    cv2.imwrite('red_patch.jpg', cropped)
+            #else:
+            #    cv2.imwrite('green_patch.jpg', cropped)
             # RG chromaticity (normalized) of patch
             np.seterr(invalid='ignore')
             I = self.patch[marker].sum(axis=2)
@@ -381,9 +382,13 @@ class segmentation(CalibrationPrompt):
 
         masked_r = cv2.bitwise_and(frame, frame, mask = bp_r.astype(np.uint8))
         masked_g = cv2.bitwise_and(frame, frame, mask = bp_g.astype(np.uint8))
-
-        thresh_r = cv2.inRange(masked_r, self.min_rgb[0], self.max_rgb[0])
-        thresh_g = cv2.inRange(masked_g, self.min_rgb[1], self.max_rgb[1])
+        
+        if self.max_rgb[0,1] < self.max_rgb[1,1]:
+            thresh_r = cv2.inRange(masked_r, self.min_rgb[0], self.max_rgb[0])  # left marker is red
+            thresh_g = cv2.inRange(masked_g, self.min_rgb[1], self.max_rgb[1])  # right marker is green
+        else:
+            thresh_r = cv2.inRange(masked_g, self.min_rgb[0], self.max_rgb[0])  # left marker is green
+            thresh_g = cv2.inRange(masked_r, self.min_rgb[1], self.max_rgb[1])  # right marker is red
         
         return thresh_r, thresh_g
 
