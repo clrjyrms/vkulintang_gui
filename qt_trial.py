@@ -494,7 +494,7 @@ class segmentation(CalibrationPrompt):
         #----- draw centroid -----
         if Cr[1] != self.grid_y1:
             cv2.circle(frame, (Cr[0], Cr[1]), 5, (255, 0, 0), -1)
-        if Cg[2] != self.grid_y1:
+        if Cg[1] != self.grid_y1:
             cv2.circle(frame, (Cg[0], Cg[1]), 5, (255, 0, 0), -1)
 
         #----- add labels -----
@@ -751,4 +751,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
