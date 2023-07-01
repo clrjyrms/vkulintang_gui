@@ -15,6 +15,8 @@ from PySide6.QtWidgets import *
 from ui_Loading_page import Ui_LoadingPage
 from ui_Main_page import Ui_MainPage
 from ui_calib_prompt import Ui_MainWindow
+from ui_About_page import Ui_about_page
+from ui_Tutorial_page import Ui_tutorial_page
 
 # GLOBAL DECLARATION
 counter = 0
@@ -92,16 +94,47 @@ class MainWindow(QMainWindow):
     
     def showAboutPage(self):
         print("About Page Clicked")
+        self.close()
+        self.aboutPage = About()
+        self.aboutPage.show()
     
     def showTutorialPage(self):
         print("Tutorial Page Clicked")
+        self.close()
+        self.tutorialPage = Tutorial()
+        self.tutorialPage.show()
 
     def startCalibration(self):
         print("Start Calibration")
         self.close()
         self.calibration = CalibrationPrompt()
-        print("here")
         self.calibration.show()
+
+class About(QMainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+        self.ui = Ui_about_page()
+        self.ui.setupUi(self)
+
+        self.ui.back_to_main.clicked.connect(self.callMainPage)
+    
+    def callMainPage(self):
+        self.close()
+        self.mainPage = MainWindow()
+        self.mainPage.show()
+
+class Tutorial(QMainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+        self.ui = Ui_tutorial_page()
+        self.ui.setupUi(self)
+
+        self.ui.back_to_main.clicked.connect(self.callMainPage)
+    
+    def callMainPage(self):
+        self.close()
+        self.mainPage = MainWindow()
+        self.mainPage.show()
 
 
 class CalibrationPrompt(QMainWindow):
