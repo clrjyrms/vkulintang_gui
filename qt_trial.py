@@ -427,6 +427,8 @@ class segmentation(CalibrationPrompt):
             center[1] = indices[0].mean()
             center[0] = indices[1].mean()
             #print(indices[0].size)
+        else:
+            center = [0, self.grid_y1] # if no centroid detected, set to upper line bound of gong box to preserve detection logic
         
         center = np.array(center, dtype=np.uint16)
         return center, frame
@@ -490,14 +492,16 @@ class segmentation(CalibrationPrompt):
         cv2.rectangle(frame, (self.gong_8[0,0], self.gong_8[0,1]), (self.gong_8[1,0], self.gong_8[1,1]), self.gong_color_draw, 2)
 
         #----- draw centroid -----
-        cv2.circle(frame, (Cr[0], Cr[1]), 5, (255, 0, 0), -1)
-        cv2.circle(frame, (Cg[0], Cg[1]), 5, (255, 0, 0), -1)
+        if Cr[1] != self.grid_y1:
+            cv2.circle(frame, (Cr[0], Cr[1]), 5, (255, 0, 0), -1)
+        if Cg[2] != self.grid_y1:
+            cv2.circle(frame, (Cg[0], Cg[1]), 5, (255, 0, 0), -1)
 
         #----- add labels -----
         # green centroid
-        cv2.putText(frame, "green", (Cg[0] - 25, Cg[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
+        cv2.putText(frame, "RIGHT", (Cg[0] - 25, Cg[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
         # red centroid
-        cv2.putText(frame, "red", (Cr[0] - 25, Cr[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
+        cv2.putText(frame, "LEFT", (Cr[0] - 25, Cr[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
         # gong labels
         cv2.putText(frame, "Gong 1", (self.gong_1[2,0], self.gong_1[2,1]),cv2.FONT_HERSHEY_SIMPLEX, 0.25, self.text_color, 1)
         cv2.putText(frame, "Gong 2", (self.gong_2[2,0], self.gong_2[2,1]),cv2.FONT_HERSHEY_SIMPLEX, 0.25, self.text_color, 1)
