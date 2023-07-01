@@ -117,7 +117,7 @@ class Ui_about_page(object):
 
     def retranslateUi(self, about_page):
         about_page.setWindowTitle(QCoreApplication.translate("about_page", u"About", None))
-        self.label_3.setText(QCoreApplication.translate("about_page", u"About Virtual Kulintang", None))
+        self.label_3.setText(QCoreApplication.translate("about_page", u"<html><head/><body><p><span style=\" text-decoration: underline;\">About Virtual Kulintang</span></p></body></html>", None))
         self.label_2.setText(QCoreApplication.translate("about_page", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
