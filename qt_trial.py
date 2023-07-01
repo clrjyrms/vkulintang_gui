@@ -17,6 +17,7 @@ from ui_Main_page import Ui_MainPage
 from ui_calib_prompt import Ui_MainWindow
 from ui_About_page import Ui_about_page
 from ui_Tutorial_page import Ui_tutorial_page
+from matplotlib import pyplot as plt
 
 # GLOBAL DECLARATION
 counter = 0
@@ -325,10 +326,10 @@ class segmentation(CalibrationPrompt):
             self.patch[marker] = np.array(cropped)
             self.min_rgb[marker] = np.amin(cropped, axis=(0,1))
             self.max_rgb[marker] = np.amax(cropped, axis=(0,1))
-            if marker == 0:
-                cv2.imwrite('red_patch.jpg', cropped)
-            else:
-                cv2.imwrite('green_patch.jpg', cropped)
+            #if marker == 0:
+            #    cv2.imwrite('red_patch.jpg', cropped)
+            #else:
+            #    cv2.imwrite('green_patch.jpg', cropped)
             # RG chromaticity (normalized) of patch
             np.seterr(invalid='ignore')
             I = self.patch[marker].sum(axis=2)
@@ -381,9 +382,13 @@ class segmentation(CalibrationPrompt):
 
         masked_r = cv2.bitwise_and(frame, frame, mask = bp_r.astype(np.uint8))
         masked_g = cv2.bitwise_and(frame, frame, mask = bp_g.astype(np.uint8))
-
-        thresh_r = cv2.inRange(masked_r, self.min_rgb[0], self.max_rgb[0])
-        thresh_g = cv2.inRange(masked_g, self.min_rgb[1], self.max_rgb[1])
+        
+        if self.max_rgb[0,1] < self.max_rgb[1,1]:
+            thresh_r = cv2.inRange(masked_r, self.min_rgb[0], self.max_rgb[0])  # left marker is red
+            thresh_g = cv2.inRange(masked_g, self.min_rgb[1], self.max_rgb[1])  # right marker is green
+        else:
+            thresh_r = cv2.inRange(masked_g, self.min_rgb[0], self.max_rgb[0])  # left marker is green
+            thresh_g = cv2.inRange(masked_r, self.min_rgb[1], self.max_rgb[1])  # right marker is red
         
         return thresh_r, thresh_g
 
@@ -422,6 +427,8 @@ class segmentation(CalibrationPrompt):
             center[1] = indices[0].mean()
             center[0] = indices[1].mean()
             #print(indices[0].size)
+        else:
+            center = [0, self.grid_y1] # if no centroid detected, set to upper line bound of gong box to preserve detection logic
         
         center = np.array(center, dtype=np.uint16)
         return center, frame
@@ -485,14 +492,16 @@ class segmentation(CalibrationPrompt):
         cv2.rectangle(frame, (self.gong_8[0,0], self.gong_8[0,1]), (self.gong_8[1,0], self.gong_8[1,1]), self.gong_color_draw, 2)
 
         #----- draw centroid -----
-        cv2.circle(frame, (Cr[0], Cr[1]), 5, (255, 0, 0), -1)
-        cv2.circle(frame, (Cg[0], Cg[1]), 5, (255, 0, 0), -1)
+        if Cr[1] != self.grid_y1:
+            cv2.circle(frame, (Cr[0], Cr[1]), 5, (255, 0, 0), -1)
+        if Cg[1] != self.grid_y1:
+            cv2.circle(frame, (Cg[0], Cg[1]), 5, (255, 0, 0), -1)
 
         #----- add labels -----
         # green centroid
-        cv2.putText(frame, "green", (Cg[0] - 25, Cg[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
+        cv2.putText(frame, "RIGHT", (Cg[0] - 25, Cg[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
         # red centroid
-        cv2.putText(frame, "red", (Cr[0] - 25, Cr[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
+        cv2.putText(frame, "LEFT", (Cr[0] - 25, Cr[1] - 25),cv2.FONT_HERSHEY_SIMPLEX, 0.25, (255, 255, 255), 2)
         # gong labels
         cv2.putText(frame, "Gong 1", (self.gong_1[2,0], self.gong_1[2,1]),cv2.FONT_HERSHEY_SIMPLEX, 0.25, self.text_color, 1)
         cv2.putText(frame, "Gong 2", (self.gong_2[2,0], self.gong_2[2,1]),cv2.FONT_HERSHEY_SIMPLEX, 0.25, self.text_color, 1)
@@ -742,4 +751,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
