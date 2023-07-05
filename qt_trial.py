@@ -236,7 +236,7 @@ class segmentation(CalibrationPrompt):
         self.directory_sound = "./synthesized/"
 
     # HELPER FUNCTIONS
-    def randomize(gong_number):
+    def randomize(self, gong_number):
         random_num = str(random.randint(1, 5))
         filename = gong_number + "_s" + random_num + "_synth_beed.wav"
         print(filename)   # for checking purposes only
@@ -633,39 +633,39 @@ class segmentation(CalibrationPrompt):
                 if gong_no[0] < 3:
                     if gong_no[0] < 2:
                         cv2.rectangle(frame, (self.gong_1[0,0], self.gong_1[0,1]), (self.gong_1[1,0], self.gong_1[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_1 = pygame.mixer.Sound(self.directory_sound + randomize("g1"))     # for randomizing gong sounds
+                        self.gong_sound_1 = pygame.mixer.Sound(self.directory_sound + self.randomize("g1"))     # for randomizing gong sounds
                         self.gong_sound_1.play()
                     else:
                         cv2.rectangle(frame, (self.gong_2[0,0], self.gong_2[0,1]), (self.gong_2[1,0], self.gong_2[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_2 = pygame.mixer.Sound(self.directory_sound + randomize("g2"))     # for randomizing gong sounds
+                        self.gong_sound_2 = pygame.mixer.Sound(self.directory_sound + self.randomize("g2"))     # for randomizing gong sounds
                         self.gong_sound_2.play()
                 else:
                     if gong_no[0] < 4:
                         cv2.rectangle(frame, (self.gong_3[0,0], self.gong_3[0,1]), (self.gong_3[1,0], self.gong_3[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_3 = pygame.mixer.Sound(self.directory_sound + randomize("g3"))     # for randomizing gong sounds
+                        self.gong_sound_3 = pygame.mixer.Sound(self.directory_sound + self.randomize("g3"))     # for randomizing gong sounds
                         self.gong_sound_3.play()
                     else:
                         cv2.rectangle(frame, (self.gong_4[0,0], self.gong_4[0,1]), (self.gong_4[1,0], self.gong_4[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_4 = pygame.mixer.Sound(self.directory_sound + randomize("g4"))     # for randomizing gong sounds
+                        self.gong_sound_4 = pygame.mixer.Sound(self.directory_sound + self.randomize("g4"))     # for randomizing gong sounds
                         self.gong_sound_4.play()
             else:
                 if gong_no[0] < 7:
                     if gong_no[0] < 6:
                         cv2.rectangle(frame, (self.gong_5[0,0], self.gong_5[0,1]), (self.gong_5[1,0], self.gong_5[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_5 = pygame.mixer.Sound(self.directory_sound + randomize("g5"))     # for randomizing gong sounds
+                        self.gong_sound_5 = pygame.mixer.Sound(self.directory_sound + self.randomize("g5"))     # for randomizing gong sounds
                         self.gong_sound_5.play()
                     else:
                         cv2.rectangle(frame, (self.gong_6[0,0], self.gong_6[0,1]), (self.gong_6[1,0], self.gong_6[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_6 = pygame.mixer.Sound(self.directory_sound + randomize("g6"))     # for randomizing gong sounds
+                        self.gong_sound_6 = pygame.mixer.Sound(self.directory_sound + self.randomize("g6"))     # for randomizing gong sounds
                         self.gong_sound_6.play()
                 else:
                     if gong_no[0] < 8:
                         cv2.rectangle(frame, (self.gong_7[0,0], self.gong_7[0,1]), (self.gong_7[1,0], self.gong_7[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_7 = pygame.mixer.Sound(self.directory_sound + randomize("g7"))     # for randomizing gong sounds
+                        self.gong_sound_7 = pygame.mixer.Sound(self.directory_sound + self.randomize("g7"))     # for randomizing gong sounds
                         self.gong_sound_7.play()
                     else:
                         cv2.rectangle(frame, (self.gong_8[0,0], self.gong_8[0,1]), (self.gong_8[1,0], self.gong_8[1,1]), self.gong_color_strike_g, 2)
-                        self.gong_sound_8 = pygame.mixer.Sound(self.directory_sound + randomize("g8"))     # for randomizing gong sounds
+                        self.gong_sound_8 = pygame.mixer.Sound(self.directory_sound + self.randomize("g8"))     # for randomizing gong sounds
                         self.gong_sound_8.play()
 
         #----- display animation and play sound for hits in the red centroid
@@ -674,39 +674,39 @@ class segmentation(CalibrationPrompt):
                 if gong_no[1] < 3:
                     if gong_no[1] < 2:
                         cv2.rectangle(frame, (self.gong_1[0,0], self.gong_1[0,1]), (self.gong_1[1,0], self.gong_1[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_1 = pygame.mixer.Sound(self.directory_sound + randomize("g1"))     # for randomizing gong sounds
+                        self.gong_sound_1 = pygame.mixer.Sound(self.directory_sound + self.randomize("g1"))     # for randomizing gong sounds
                         self.gong_sound_1.play()
                     else:
                         cv2.rectangle(frame, (self.gong_2[0,0], self.gong_2[0,1]), (self.gong_2[1,0], self.gong_2[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_2 = pygame.mixer.Sound(self.directory_sound + randomize("g2"))     # for randomizing gong sounds
+                        self.gong_sound_2 = pygame.mixer.Sound(self.directory_sound + self.randomize("g2"))     # for randomizing gong sounds
                         self.gong_sound_2.play()
                 else:
                     if gong_no[1] < 4:
                         cv2.rectangle(frame, (self.gong_3[0,0], self.gong_3[0,1]), (self.gong_3[1,0], self.gong_3[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_3 = pygame.mixer.Sound(self.directory_sound + randomize("g3"))     # for randomizing gong sounds
+                        self.gong_sound_3 = pygame.mixer.Sound(self.directory_sound + self.randomize("g3"))     # for randomizing gong sounds
                         self.gong_sound_3.play()
                     else:
                         cv2.rectangle(frame, (self.gong_4[0,0], self.gong_4[0,1]), (self.gong_4[1,0], self.gong_4[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_4 = pygame.mixer.Sound(self.directory_sound + randomize("g4"))     # for randomizing gong sounds
+                        self.gong_sound_4 = pygame.mixer.Sound(self.directory_sound + self.randomize("g4"))     # for randomizing gong sounds
                         self.gong_sound_4.play()
             else:
                 if gong_no[1] < 7:
                     if gong_no[1] < 6:
                         cv2.rectangle(frame, (self.gong_5[0,0], self.gong_5[0,1]), (self.gong_5[1,0], self.gong_5[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_5 = pygame.mixer.Sound(self.directory_sound + randomize("g5"))     # for randomizing gong sounds
+                        self.gong_sound_5 = pygame.mixer.Sound(self.directory_sound + self.randomize("g5"))     # for randomizing gong sounds
                         self.gong_sound_5.play()
                     else:
                         cv2.rectangle(frame, (self.gong_6[0,0], self.gong_6[0,1]), (self.gong_6[1,0], self.gong_6[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_6 = pygame.mixer.Sound(self.directory_sound + randomize("g6"))     # for randomizing gong sounds
+                        self.gong_sound_6 = pygame.mixer.Sound(self.directory_sound + self.randomize("g6"))     # for randomizing gong sounds
                         self.gong_sound_6.play()
                 else:
                     if gong_no[1] < 8:
                         cv2.rectangle(frame, (self.gong_7[0,0], self.gong_7[0,1]), (self.gong_7[1,0], self.gong_7[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_7 = pygame.mixer.Sound(self.directory_sound + randomize("g7"))     # for randomizing gong sounds
+                        self.gong_sound_7 = pygame.mixer.Sound(self.directory_sound + self.randomize("g7"))     # for randomizing gong sounds
                         self.gong_sound_7.play()
                     else:
                         cv2.rectangle(frame, (self.gong_8[0,0], self.gong_8[0,1]), (self.gong_8[1,0], self.gong_8[1,1]), self.gong_color_strike_r, 2)
-                        self.gong_sound_8 = pygame.mixer.Sound(self.directory_sound + randomize("g8"))     # for randomizing gong sounds
+                        self.gong_sound_8 = pygame.mixer.Sound(self.directory_sound + self.randomize("g8"))     # for randomizing gong sounds
                         self.gong_sound_8.play()
 
     def update_hit_state(self):
