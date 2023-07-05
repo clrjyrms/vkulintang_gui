@@ -748,6 +748,10 @@ class segmentation(CalibrationPrompt):
             cv2.namedWindow(title, cv2.WINDOW_NORMAL)
             cv2.resizeWindow(title, int(self.DISPLAY_WIDTH*0.8), int(self.DISPLAY_HEIGHT*0.8))
             cv2.imshow(title, frame)
+            # center window
+            new_width = self.screen_center[0]-int((self.DISPLAY_WIDTH*0.8)/2)
+            new_height = self.screen_center[1]-int((self.DISPLAY_HEIGHT*0.8)/1.5)
+            cv2.moveWindow(title, new_width, new_height)
             
             if cv2.waitKey(1) == 27:
                 break
