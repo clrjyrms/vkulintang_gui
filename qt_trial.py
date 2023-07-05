@@ -6,6 +6,7 @@ import time
 import datetime
 import pygame
 import random
+import pyautogui
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import (QCoreApplication, QPropertyAnimation, QDate, QDateTime, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt, QEvent)
 from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QIcon, QKeySequence, QLinearGradient, QPalette, QPainter, QPixmap, QRadialGradient)
@@ -151,10 +152,9 @@ class CalibrationPrompt(QMainWindow):
         
         ## INITIALIZE MAIN PROGRAM CODE
         segment = segmentation()
-        segment.init_drum_sounds()
-        segment.marker_calibration()
-        segment.init_bounding_boxes_coord()
+        segment.init_calibration()
         segment.main_detection()
+        
         """segmentation.__init__(self)
         segmentation.init_drum_sounds(self)
         
@@ -165,12 +165,6 @@ class CalibrationPrompt(QMainWindow):
         segmentation.main_detection(self) """
 
 
-# --- randomize gong sound function ---
-def randomize(gong_number):
-        random_num = str(random.randint(1, 5))
-        filename = gong_number + "_s" + random_num + "_synth_beed.wav"
-        print(filename)   # for checking purposes only
-        return filename
 
 class segmentation(CalibrationPrompt):
     def __init__(self):
@@ -183,6 +177,7 @@ class segmentation(CalibrationPrompt):
         self.center = (int(self.pixel_width/2), int(self.pixel_height/2))
         self.radius = 125
         self.diameter = int(2*self.radius)
+        self.screen_center = [0, 0]
 
         self.center_color = (255, 0, 0)
         self.bound_color = (0, 255, 0)
@@ -240,26 +235,48 @@ class segmentation(CalibrationPrompt):
         # --- path of synthesized sound files --- 
         self.directory_sound = "./synthesized/"
 
+    # HELPER FUNCTIONS
+    def randomize(gong_number):
+        random_num = str(random.randint(1, 5))
+        filename = gong_number + "_s" + random_num + "_synth_beed.wav"
+        print(filename)   # for checking purposes only
+        return filename
+
+    def downsample(self, frame):
+        '''
+        reduce resolution
+        '''
+        res = (self.pixel_width, self.pixel_height)
+        return cv2.resize(frame, res, interpolation = cv2.INTER_AREA)
+
+    # CALIBRATION
     def init_calibration(self):
+        self.get_screen_center()
+        self.init_drum_sounds()
         self.marker_calibration()
         self.init_bounding_boxes_coord()
 
-    def init_drum_sounds(self):
-            # initialize pygame
-            pygame.mixer.pre_init()
-            pygame.init()
-            self.ifDrumSoundsOn = True
-            
-            self.gong_sound_1 = pygame.mixer.Sound(self.directory_sound + randomize("g1"))
-            self.gong_sound_2 = pygame.mixer.Sound(self.directory_sound + randomize("g2"))
-            self.gong_sound_3 = pygame.mixer.Sound(self.directory_sound + randomize("g3"))
-            self.gong_sound_4 = pygame.mixer.Sound(self.directory_sound + randomize("g4"))
-            self.gong_sound_5 = pygame.mixer.Sound(self.directory_sound + randomize("g5"))
-            self.gong_sound_6 = pygame.mixer.Sound(self.directory_sound + randomize("g6"))
-            self.gong_sound_7 = pygame.mixer.Sound(self.directory_sound + randomize("g7"))
-            self.gong_sound_8 = pygame.mixer.Sound(self.directory_sound + randomize("g8"))
-            
+    def get_screen_center(self):
+        screen = pyautogui.size()
+        self.screen_center[0] = int(screen[0]/2)
+        self.screen_center[1] = int(screen[1]/2)
+        print(screen, self.screen_center)
 
+    def init_drum_sounds(self):
+        # initialize pygame
+        pygame.mixer.pre_init()
+        pygame.init()
+        self.ifDrumSoundsOn = True
+        
+        self.gong_sound_1 = pygame.mixer.Sound(self.directory_sound + self.randomize("g1"))
+        self.gong_sound_2 = pygame.mixer.Sound(self.directory_sound + self.randomize("g2"))
+        self.gong_sound_3 = pygame.mixer.Sound(self.directory_sound + self.randomize("g3"))
+        self.gong_sound_4 = pygame.mixer.Sound(self.directory_sound + self.randomize("g4"))
+        self.gong_sound_5 = pygame.mixer.Sound(self.directory_sound + self.randomize("g5"))
+        self.gong_sound_6 = pygame.mixer.Sound(self.directory_sound + self.randomize("g6"))
+        self.gong_sound_7 = pygame.mixer.Sound(self.directory_sound + self.randomize("g7"))
+        self.gong_sound_8 = pygame.mixer.Sound(self.directory_sound + self.randomize("g8"))
+            
     def marker_calibration(self):
         self.cam = cv2.VideoCapture(0)
         frame_center = (int(self.cam.get(cv2.CAP_PROP_FRAME_WIDTH)/2), int(self.cam.get(cv2.CAP_PROP_FRAME_HEIGHT)/2))
@@ -283,6 +300,10 @@ class segmentation(CalibrationPrompt):
                 cv2.resizeWindow(title, self.frame_width, self.frame_height)
                 cv2.setMouseCallback(title, self.retrieve_patch, [mirrored_ds, i])
                 cv2.imshow(title, image)
+                # center window
+                new_width = self.screen_center[0]-int(self.frame_width/2)
+                new_height = self.screen_center[1]-int(self.frame_height/1.5)
+                cv2.moveWindow(title, new_width, new_height)
 
                 if self.patch_retrieved == True:
                     break
@@ -341,14 +362,48 @@ class segmentation(CalibrationPrompt):
             self.patch_g_int[marker] = (self.patch_g[marker]*(self.BINS-1)).astype(int)
 
             self.patch_retrieved = True             
+    
+    def init_bounding_boxes_coord(self):
 
-    def downsample(self, frame):
-        '''
-        reduce resolution
-        '''
-        res = (self.pixel_width, self.pixel_height)
-        return cv2.resize(frame, res, interpolation = cv2.INTER_AREA)
+        self.grid_y1 = int(0.71875*self.pixel_height)    # upper y of bound
+        self.grid_y2 = int(self.pixel_height)           # lower y of bound
+        # self.bound_width = 135
+        self.bound_width = 0.125                        # x is 12.5% of width
 
+        self.gong_1[0,:] = [0, self.grid_y1]                                                            # (0, upper y)
+        self.gong_1[1,:] = [int(self.bound_width*self.pixel_width), self.grid_y2]    #                   (135, lower y)
+        self.gong_1[2,:] = [((self.gong_1[0,0] + self.gong_1[1,0])/2) - 12, self.gong_1[0,1] + 25]      # label coordinates
+
+        self.gong_2[0,:] = [int(self.bound_width*self.pixel_width), self.grid_y1]                       # (135, upper y)
+        self.gong_2[1,:] = [int(2*self.bound_width*self.pixel_width), self.grid_y2]                     # (270, lower y)
+        self.gong_2[2,:] = [((self.gong_2[0,0] + self.gong_2[1,0])/2) - 12, self.gong_2[0,1] + 25]
+
+        self.gong_3[0,:] = [int(2*self.bound_width*self.pixel_width), self.grid_y1]                     # (270, upper y)
+        self.gong_3[1,:] = [int(3*self.bound_width*self.pixel_width), self.grid_y2]                     # (405, lower y)
+        self.gong_3[2,:] = [((self.gong_3[0,0] + self.gong_3[1,0])/2) - 12, self.gong_3[0,1] + 25]
+
+        self.gong_4[0,:] = [int(3*self.bound_width*self.pixel_width), self.grid_y1]                     # (405, upper y)
+        self.gong_4[1,:] = [int(4*self.bound_width*self.pixel_width), self.grid_y2]                     # (540, lower y)
+        self.gong_4[2,:] = [((self.gong_4[0,0] + self.gong_4[1,0])/2) - 12, self.gong_4[0,1] + 25]
+
+        self.gong_5[0,:] = [int(4*self.bound_width*self.pixel_width), self.grid_y1]                     # (540, upper y)
+        self.gong_5[1,:] = [int(5*self.bound_width*self.pixel_width), self.grid_y2]                     # (675, lower y)
+        self.gong_5[2,:] = [((self.gong_5[0,0] + self.gong_5[1,0])/2) - 12, self.gong_5[0,1] + 25]
+
+        self.gong_6[0,:] = [int(5*self.bound_width*self.pixel_width), self.grid_y1]                     # (675, upper y)
+        self.gong_6[1,:] = [int(6*self.bound_width*self.pixel_width), self.grid_y2]                     # (810, lower y)
+        self.gong_6[2,:] = [((self.gong_6[0,0] + self.gong_6[1,0])/2) - 12, self.gong_6[0,1] + 25]
+
+        self.gong_7[0,:] = [int(6*self.bound_width*self.pixel_width), self.grid_y1]                     # (810, upper y)
+        self.gong_7[1,:] = [int(7*self.bound_width*self.pixel_width), self.grid_y2]                     # (945, lower y)
+        self.gong_7[2,:] = [((self.gong_7[0,0] + self.gong_7[1,0])/2) - 12, self.gong_7[0,1] + 25]
+
+        self.gong_8[0,:] = [int(7*self.bound_width*self.pixel_width), self.grid_y1]                     # (945, upper y)
+        self.gong_8[1,:] = [int(8*self.bound_width*self.pixel_width), self.grid_y2]                     # (1080, lower y)
+        self.gong_8[2,:] = [((self.gong_8[0,0] + self.gong_8[1,0])/2) - 12, self.gong_8[0,1] + 25]
+
+
+    # DETECTION
     def image_segmentation(self, frame):
         """
         image_segmentation(frame)
@@ -432,45 +487,6 @@ class segmentation(CalibrationPrompt):
         
         center = np.array(center, dtype=np.uint16)
         return center, frame
-
-    def init_bounding_boxes_coord(self):
-
-        self.grid_y1 = int(0.71875*self.pixel_height)    # upper y of bound
-        self.grid_y2 = int(self.pixel_height)           # lower y of bound
-        # self.bound_width = 135
-        self.bound_width = 0.125                        # x is 12.5% of width
-
-        self.gong_1[0,:] = [0, self.grid_y1]                                                            # (0, upper y)
-        self.gong_1[1,:] = [int(self.bound_width*self.pixel_width), self.grid_y2]    #                   (135, lower y)
-        self.gong_1[2,:] = [((self.gong_1[0,0] + self.gong_1[1,0])/2) - 12, self.gong_1[0,1] + 25]      # label coordinates
-
-        self.gong_2[0,:] = [int(self.bound_width*self.pixel_width), self.grid_y1]                       # (135, upper y)
-        self.gong_2[1,:] = [int(2*self.bound_width*self.pixel_width), self.grid_y2]                     # (270, lower y)
-        self.gong_2[2,:] = [((self.gong_2[0,0] + self.gong_2[1,0])/2) - 12, self.gong_2[0,1] + 25]
-
-        self.gong_3[0,:] = [int(2*self.bound_width*self.pixel_width), self.grid_y1]                     # (270, upper y)
-        self.gong_3[1,:] = [int(3*self.bound_width*self.pixel_width), self.grid_y2]                     # (405, lower y)
-        self.gong_3[2,:] = [((self.gong_3[0,0] + self.gong_3[1,0])/2) - 12, self.gong_3[0,1] + 25]
-
-        self.gong_4[0,:] = [int(3*self.bound_width*self.pixel_width), self.grid_y1]                     # (405, upper y)
-        self.gong_4[1,:] = [int(4*self.bound_width*self.pixel_width), self.grid_y2]                     # (540, lower y)
-        self.gong_4[2,:] = [((self.gong_4[0,0] + self.gong_4[1,0])/2) - 12, self.gong_4[0,1] + 25]
-
-        self.gong_5[0,:] = [int(4*self.bound_width*self.pixel_width), self.grid_y1]                     # (540, upper y)
-        self.gong_5[1,:] = [int(5*self.bound_width*self.pixel_width), self.grid_y2]                     # (675, lower y)
-        self.gong_5[2,:] = [((self.gong_5[0,0] + self.gong_5[1,0])/2) - 12, self.gong_5[0,1] + 25]
-
-        self.gong_6[0,:] = [int(5*self.bound_width*self.pixel_width), self.grid_y1]                     # (675, upper y)
-        self.gong_6[1,:] = [int(6*self.bound_width*self.pixel_width), self.grid_y2]                     # (810, lower y)
-        self.gong_6[2,:] = [((self.gong_6[0,0] + self.gong_6[1,0])/2) - 12, self.gong_6[0,1] + 25]
-
-        self.gong_7[0,:] = [int(6*self.bound_width*self.pixel_width), self.grid_y1]                     # (810, upper y)
-        self.gong_7[1,:] = [int(7*self.bound_width*self.pixel_width), self.grid_y2]                     # (945, lower y)
-        self.gong_7[2,:] = [((self.gong_7[0,0] + self.gong_7[1,0])/2) - 12, self.gong_7[0,1] + 25]
-
-        self.gong_8[0,:] = [int(7*self.bound_width*self.pixel_width), self.grid_y1]                     # (945, upper y)
-        self.gong_8[1,:] = [int(8*self.bound_width*self.pixel_width), self.grid_y2]                     # (1080, lower y)
-        self.gong_8[2,:] = [((self.gong_8[0,0] + self.gong_8[1,0])/2) - 12, self.gong_8[0,1] + 25]
 
     def disp_config(self, frame, Cr, Cg):
         """
@@ -732,6 +748,10 @@ class segmentation(CalibrationPrompt):
             cv2.namedWindow(title, cv2.WINDOW_NORMAL)
             cv2.resizeWindow(title, int(self.DISPLAY_WIDTH*0.8), int(self.DISPLAY_HEIGHT*0.8))
             cv2.imshow(title, frame)
+            # center window
+            new_width = self.screen_center[0]-int((self.DISPLAY_WIDTH*0.8)/2)
+            new_height = self.screen_center[1]-int((self.DISPLAY_HEIGHT*0.8)/1.5)
+            cv2.moveWindow(title, new_width, new_height)
             
             if cv2.waitKey(1) == 27:
                 break
